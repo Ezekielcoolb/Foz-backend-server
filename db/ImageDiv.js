@@ -9,7 +9,7 @@ const divImageSchema = new mongoose.Schema({
     paragraph: String,
     divImage: {
         filename: String,
-        filepath: String
+        url: String
     }, 
   
 });

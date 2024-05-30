@@ -9,7 +9,7 @@ const latestSchema = new mongoose.Schema({
    paragraph: String,
     latestImage: {
         filename: String,
-        filepath: String
+        url: String
     }
 });
 

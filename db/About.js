@@ -11,7 +11,7 @@ const aboutSchema = new mongoose.Schema({
     mission: [String],
     aboutImage: {
         filename: String,
-        filepath: String
+        url: String
     }
 });
 

@@ -56,18 +56,11 @@ const cloudinaryStorage = new CloudinaryStorage({
   },
 });
 // Set up Multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
 
 
 
-const upload = multer({ storage: storage});
+
+
 const uploadCloudinary = multer({ storage: cloudinaryStorage });
 
 app.use(express.static("public"))
@@ -89,341 +82,301 @@ app.post('/api/image-upload', uploadCloudinary.single('image'), async (req, res)
 
 
 
-app.post('/api/about', upload.single('aboutImage'), async (req, res) => {
-    try {
-      // Extract data from the request body
-      const { title, mainPara, dream, vision, mission } = req.body;
-  
-      // File information
-      let aboutImage = null;
-      if (req.file) {
-        aboutImage = {
-          filename: req.file.filename,
-          filepath: req.file.path
-        };
-      }
-  
-      // Create or update the "About" document
-      const updatedAbout = await About.findOneAndUpdate(
-        {},
-        {
-          title,
-          mainPara: JSON.parse(mainPara),
-          dream: JSON.parse(dream),
-          vision: JSON.parse(vision),
-          mission: JSON.parse(mission),
-          aboutImage
-        },
-        { new: true, upsert: true } // Create a new document if none exists
-      );
-  
-      // Send a response
-      res.status(201).json(updatedAbout);
-    } catch (error) {
-      console.error('Error creating new About document:', error);
-      res.status(500).json({ error: 'Failed to create or update About document' });
+app.post('/api/about', uploadCloudinary.single('aboutImage'), async (req, res) => {
+  try {
+    const { title, mainPara, dream, vision, mission } = req.body;
+    let aboutImage = null;
+    if (req.file) {
+      aboutImage = {
+        filename: req.file.filename,
+        url: req.file.path
+      };
     }
-  });
 
+    const updatedAbout = await About.findOneAndUpdate(
+      {},
+      {
+        title,
+        mainPara: JSON.parse(mainPara),
+        dream: JSON.parse(dream),
+        vision: JSON.parse(vision),
+        mission: JSON.parse(mission),
+        aboutImage
+      },
+      { new: true, upsert: true }
+    );
 
-app.post('/api/latest', upload.single('latestImage'), async (req, res) => {
-    try {
-        // Extract data from the request body
-        const { title, paragraph } = req.body;
-
-        // File information
-        let latestImage = null;
-        if (req.file) {
-            latestImage = {
-                filename: req.file.filename,
-                filepath: req.file.path
-            };
-        }
-
-        // Create a new "About" document
-        const newLatest = new Latest({
-            title,
-            paragraph,
-            latestImage
-        });
-
-        // Save the document to the database
-        const savedLatest = await newLatest.save();
-
-        // Send a response
-        res.status(201).json(savedLatest);
-    } catch (error) {
-        console.error('Error creating Latest News:', error);
-        res.status(500).json({ error: 'Failed to create Latest News' });
-    }
+    res.status(201).json(updatedAbout);
+  } catch (error) {
+    console.error('Error creating new About document:', error);
+    res.status(500).json({ error: 'Failed to create or update About document' });
+  }
 });
 
-app.post('/api/div-image', upload.single('divImage'), async (req, res) => {
-    try {
-        // Extract data from the request body
-        const { title, paragraph } = req.body;
-
-        // File information
-        let divImage = null;
-        if (req.file) {
-            divImage = {
-                filename: req.file.filename,
-                filepath: req.file.path
-            };
-        }
-
-        // Create a new "About" document
-        const newDivImage = new DivImage({
-            title,
-            paragraph,
-            divImage
-        });
-
-        // Save the document to the database
-        const savedDivImage = await newDivImage.save();
-
-        // Send a response
-        res.status(201).json(savedDivImage);
-    } catch (error) {
-        console.error('Error creating Section with Image', error);
-        res.status(500).json({ error: 'Failed to create Section with Image '});
+app.post('/api/latest', uploadCloudinary.single('latestImage'), async (req, res) => {
+  try {
+    const { title, paragraph } = req.body;
+    let latestImage = null;
+    if (req.file) {
+      latestImage = {
+        filename: req.file.filename,
+        url: req.file.path
+      };
     }
+
+    const newLatest = new Latest({
+      title,
+      paragraph,
+      latestImage
+    });
+
+    const savedLatest = await newLatest.save();
+    res.status(201).json(savedLatest);
+  } catch (error) {
+    console.error('Error creating Latest News:', error);
+    res.status(500).json({ error: 'Failed to create Latest News' });
+  }
+});
+
+app.post('/api/div-image', uploadCloudinary.single('divImage'), async (req, res) => {
+  try {
+    const { title, paragraph } = req.body;
+    let divImage = null;
+    if (req.file) {
+      divImage = {
+        filename: req.file.filename,
+        url: req.file.path
+      };
+    }
+
+    const newDivImage = new DivImage({
+      title,
+      paragraph,
+      divImage
+    });
+
+    const savedDivImage = await newDivImage.save();
+    res.status(201).json(savedDivImage);
+  } catch (error) {
+    console.error('Error creating Section with Image', error);
+    res.status(500).json({ error: 'Failed to create Section with Image ' });
+  }
 });
 
 app.post('/api/new-div', async (req, res) => {
-    try {
-        // Extract data from the request body
-        const { head, secPara } = req.body;
-
-        // Create a new "About" document
-        const newDiv = new NewDiv({
-            head,
-            secPara,
-        });
-
-        // Save the document to the database
-        const savedNewDiv = await newDiv.save();
-
-        // Send a response
-        res.status(201).json(savedNewDiv);
-    } catch (error) {
-        console.error('Error creating new Section:', error);
-        res.status(500).json({ error: 'Failed to create new section' });
-    }
+  try {
+    const { head, secPara } = req.body;
+    const newDiv = new NewDiv({ head, secPara });
+    const savedNewDiv = await newDiv.save();
+    res.status(201).json(savedNewDiv);
+  } catch (error) {
+    console.error('Error creating new Section:', error);
+    res.status(500).json({ error: 'Failed to create new section' });
+  }
 });
 
+app.post('/api/cladding', uploadCloudinary.fields([
+  { name: 'claddingImage', maxCount: 1 }, { name: 'claddingImage1', maxCount: 1 }, { name: 'claddingImage2', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2 } = req.body;
+    let claddingImage = null;
+    let claddingImage1 = null;
+    let claddingImage2 = null;
 
-app.use(upload.fields([
-    { name: 'claddingImage', maxCount: 1 }, { name: 'claddingImage1', maxCount: 1 }, { name: 'claddingImage2', maxCount: 1 },
-    { name: 'thermalImage', maxCount: 1 }, { name: 'thermalImage1', maxCount: 1 }, { name: 'thermalImage2', maxCount: 1 },
-    { name: 'curtainImage', maxCount: 1 }, { name: 'curtainImage1', maxCount: 1 }, { name: 'curtainImage2', maxCount: 1 },
-    { name: 'roofingImage', maxCount: 1 }, { name: 'roofingImage1', maxCount: 1 }, { name: 'roofingImage2', maxCount: 1 }
-])); // Use Multer middleware for handling file uploads
-
-// POST route to handle assignment creation with file uploads
-app.post('/api/cladding', async (req, res) => {
-    try {
-
-        const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2} = req.body;
-        let claddingImage = null;
-        let claddingImage1 = null;
-        let claddingImage2 = null;
-
-        if (req.files && req.files['claddingImage']) {
-            claddingImage = req.files['claddingImage'][0].path; // Get the path of question image
-            const { filename, path: filepath } = req.files['claddingImage'][0];
-            claddingImage = { filename, filepath };
-        }
-
-        if (req.files && req.files['claddingImage1']) {
-            claddingImage1 = req.files['claddingImage1'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['claddingImage1'][0];
-            claddingImage1 = { filename, filepath };
-        }
-        if (req.files && req.files['claddingImage2']) {
-            claddingImage2 = req.files['claddingImage2'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['claddingImage2'][0];
-            claddingImage2 = { filename, filepath };
-        }
-
-        const updatedCladding = await Cladding.findOneAndUpdate(
-            {},
-            {
-                title,
-                mainParagraph: JSON.parse(mainParagraph),
-                subHead1, 
-                subHead2, 
-                paraSub1, 
-                paraSub2,
-               claddingImage,
-               claddingImage1,
-               claddingImage2
-            },
-            { new: true, upsert: true } // Create a new document if none exists
-          );
-
-          res.status(201).json(updatedCladding);
-
-        
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    if (req.files && req.files['claddingImage']) {
+      claddingImage = {
+        filename: req.files['claddingImage'][0].filename,
+        url: req.files['claddingImage'][0].path
+      };
     }
+    if (req.files && req.files['claddingImage1']) {
+      claddingImage1 = {
+        filename: req.files['claddingImage1'][0].filename,
+        url: req.files['claddingImage1'][0].path
+      };
+    }
+    if (req.files && req.files['claddingImage2']) {
+      claddingImage2 = {
+        filename: req.files['claddingImage2'][0].filename,
+        url: req.files['claddingImage2'][0].path
+      };
+    }
+
+    const updatedCladding = await Cladding.findOneAndUpdate(
+      {},
+      {
+        title,
+        mainParagraph: JSON.parse(mainParagraph),
+        subHead1,
+        subHead2,
+        paraSub1,
+        paraSub2,
+        claddingImage,
+        claddingImage1,
+        claddingImage2
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(201).json(updatedCladding);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
-  
+app.post('/api/post-thermal', uploadCloudinary.fields([
+  { name: 'thermalImage', maxCount: 1 }, { name: 'thermalImage1', maxCount: 1 }, { name: 'thermalImage2', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2 } = req.body;
+    let thermalImage = null;
+    let thermalImage1 = null;
+    let thermalImage2 = null;
 
-app.post('/api/thermal', async (req, res) => {
-    try {
-
-        const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2} = req.body;
-        let thermalImage = null;
-        let thermalImage1 = null;
-        let thermalImage2 = null;
-
-        if (req.files && req.files['thermalImage']) {
-            thermalImage = req.files['thermalImage'][0].path; // Get the path of question image
-            const { filename, path: filepath } = req.files['thermalImage'][0];
-            thermalImage = { filename, filepath };
-        }
-
-        if (req.files && req.files['thermalImage1']) {
-            thermalImage1 = req.files['thermalImage1'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['thermalImage1'][0];
-            thermalImage1 = { filename, filepath };
-        }
-        if (req.files && req.files['thermalImage2']) {
-            thermalImage2 = req.files['thermalImage2'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['thermalImage2'][0];
-            thermalImage2 = { filename, filepath };
-        }
-
-
-        const updatedThermal = await Thermal.findOneAndUpdate(
-            {},
-            {
-                title,
-                mainParagraph: JSON.parse(mainParagraph),
-                subHead1, 
-                subHead2, 
-                paraSub1, 
-                paraSub2,
-               thermalImage,
-               thermalImage1,
-               thermalImage2
-            },
-            { new: true, upsert: true } // Create a new document if none exists
-          );
-
-          res.status(201).json(updatedThermal);
-
-       
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    if (req.files && req.files['thermalImage']) {
+      thermalImage = {
+        filename: req.files['thermalImage'][0].filename,
+        url: req.files['thermalImage'][0].path
+      };
     }
+    if (req.files && req.files['thermalImage1']) {
+      thermalImage1 = {
+        filename: req.files['thermalImage1'][0].filename,
+        url: req.files['thermalImage1'][0].path
+      };
+    }
+    if (req.files && req.files['thermalImage2']) {
+      thermalImage2 = {
+        filename: req.files['thermalImage2'][0].filename,
+        url: req.files['thermalImage2'][0].path
+      };
+    }
+
+    const updatedThermal = await Thermal.findOneAndUpdate(
+      {},
+      {
+        title,
+        mainParagraph: JSON.parse(mainParagraph),
+        subHead1,
+        subHead2,
+        paraSub1,
+        paraSub2,
+        thermalImage,
+        thermalImage1,
+        thermalImage2
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(201).json(updatedThermal);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
-app.post('/api/curtain', async (req, res) => {
-    try {
+app.post('/api/post-curtain', uploadCloudinary.fields([
+  { name: 'curtainImage', maxCount: 1 }, { name: 'curtainImage1', maxCount: 1 }, { name: 'curtainImage2', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2 } = req.body;
+    let curtainImage = null;
+    let curtainImage1 = null;
+    let curtainImage2 = null;
 
-        const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2} = req.body;
-        let curtainImage = null;
-        let curtainImage1 = null;
-        let curtainImage2 = null;
-
-        if (req.files && req.files['curtainImage']) {
-            curtainImage = req.files['curtainImage'][0].path; // Get the path of question image
-            const { filename, path: filepath } = req.files['curtainImage'][0];
-            curtainImage = { filename, filepath };
-        }
-
-        if (req.files && req.files['curtainImage1']) {
-            curtainImage1 = req.files['curtainImage1'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['curtainImage1'][0];
-            curtainImage1 = { filename, filepath };
-        }
-        if (req.files && req.files['curtainImage2']) {
-            curtainImage2 = req.files['curtainImage2'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['curtainImage2'][0];
-            curtainImage2 = { filename, filepath };
-        }
-
-
-        const updatedCurtain = await Curtain.findOneAndUpdate(
-            {},
-            {
-                title,
-                mainParagraph: JSON.parse(mainParagraph),
-                subHead1, 
-                subHead2, 
-                paraSub1, 
-                paraSub2,
-               curtainImage,
-               curtainImage1,
-               curtainImage2
-            },
-            { new: true, upsert: true } // Create a new document if none exists
-          );
-
-          res.status(201).json(updatedCurtain);
-
-       
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    if (req.files && req.files['curtainImage']) {
+      curtainImage = {
+        filename: req.files['curtainImage'][0].filename,
+        url: req.files['curtainImage'][0].path
+      };
     }
+    if (req.files && req.files['curtainImage1']) {
+      curtainImage1 = {
+        filename: req.files['curtainImage1'][0].filename,
+        url: req.files['curtainImage1'][0].path
+      };
+    }
+    if (req.files && req.files['curtainImage2']) {
+      curtainImage2 = {
+        filename: req.files['curtainImage2'][0].filename,
+        url: req.files['curtainImage2'][0].path
+      };
+    }
+
+    const updatedCurtain = await Curtain.findOneAndUpdate(
+      {},
+      {
+        title,
+        mainParagraph: JSON.parse(mainParagraph),
+        subHead1,
+        subHead2,
+        paraSub1,
+        paraSub2,
+        curtainImage,
+        curtainImage1,
+        curtainImage2
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(201).json(updatedCurtain);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
-app.post('/api/roofing', async (req, res) => {
-    try {
+app.post('/api/post-roofing', uploadCloudinary.fields([
+  { name: 'roofingImage', maxCount: 1 }, { name: 'roofingImage1', maxCount: 1 }, { name: 'roofingImage2', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2 } = req.body;
+    let roofingImage = null;
+    let roofingImage1 = null;
+    let roofingImage2 = null;
 
-        const { title, mainParagraph, subHead1, subHead2, paraSub1, paraSub2} = req.body;
-        let roofingImage = null;
-        let roofingImage1 = null;
-        let roofingImage2 = null;
-
-        if (req.files && req.files['roofingImage']) {
-            roofingImage = req.files['roofingImage'][0].path; // Get the path of question image
-            const { filename, path: filepath } = req.files['roofingImage'][0];
-            roofingImage = { filename, filepath };
-        }
-
-        if (req.files && req.files['roofingImage1']) {
-            roofingImage1 = req.files['roofingImage1'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['roofingImage1'][0];
-            roofingImage1 = { filename, filepath };
-        }
-        if (req.files && req.files['roofingImage2']) {
-            roofingImage2 = req.files['roofingImage2'][0].path; // Get the path of correction image
-            const { filename, path: filepath } = req.files['roofingImage2'][0];
-            roofingImage2 = { filename, filepath };
-        }
-
-
-        const updatedRoofing = await Roofing.findOneAndUpdate(
-            {},
-            {
-                title,
-                mainParagraph: JSON.parse(mainParagraph),
-                subHead1, 
-                subHead2, 
-                paraSub1, 
-                paraSub2,
-               roofingImage,
-               roofingImage1,
-               roofingImage2
-            },
-            { new: true, upsert: true } // Create a new document if none exists
-          );
-
-          res.status(201).json(updatedRoofing);
-
-       
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+    if (req.files && req.files['roofingImage']) {
+      roofingImage = {
+        filename: req.files['roofingImage'][0].filename,
+        url: req.files['roofingImage'][0].path
+      };
     }
+    if (req.files && req.files['roofingImage1']) {
+      roofingImage1 = {
+        filename: req.files['roofingImage1'][0].filename,
+        url: req.files['roofingImage1'][0].path
+      };
+    }
+    if (req.files && req.files['roofingImage2']) {
+      roofingImage2 = {
+        filename: req.files['roofingImage2'][0].filename,
+        url: req.files['roofingImage2'][0].path
+      };
+    }
+
+    const updatedRoofing = await Roofing.findOneAndUpdate(
+      {},
+      {
+        title,
+        mainParagraph: JSON.parse(mainParagraph),
+        subHead1,
+        subHead2,
+        paraSub1,
+        paraSub2,
+        roofingImage,
+        roofingImage1,
+        roofingImage2
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(201).json(updatedRoofing);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
 

@@ -13,15 +13,15 @@ const curtainSchema = new mongoose.Schema({
     paraSub2: String,
     curtainImage: {
         filename: String,
-        filepath: String
+        url: String
     }, 
     curtainImage1: {
         filename: String,
-        filepath: String
+        url: String
     },
     curtainImage2: {
         filename: String,
-        filepath: String
+        url: String
     }
   
 });

@@ -13,15 +13,15 @@ const claddingSchema = new mongoose.Schema({
     paraSub2: String,
     claddingImage: {
         filename: String,
-        filepath: String
+        url: String
     }, 
     claddingImage1: {
         filename: String,
-        filepath: String
+        url: String
     },
     claddingImage2: {
         filename: String,
-        filepath: String
+        url: String
     }
   
 });

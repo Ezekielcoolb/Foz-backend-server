@@ -13,15 +13,15 @@ const roofingSchema = new mongoose.Schema({
     paraSub2: String,
     roofingImage: {
         filename: String,
-        filepath: String
+        url: String
     }, 
     roofingImage1: {
         filename: String,
-        filepath: String
+        url: String
     },
     roofingImage2: {
         filename: String,
-        filepath: String
+        url: String
     }
   
 });

@@ -13,15 +13,15 @@ const thermalSchema = new mongoose.Schema({
     paraSub2: String,
     thermalImage: {
         filename: String,
-        filepath: String
+        url: String
     }, 
     thermalImage1: {
         filename: String,
-        filepath: String
+        url: String
     },
     thermalImage2: {
         filename: String,
-        filepath: String
+        url: String
     }
   
 });
